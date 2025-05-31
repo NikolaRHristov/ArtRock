@@ -15,7 +15,8 @@ use noise_module::FbmParameters;
 // Assuming these derive Serialize, Deserialize
 use scalar_field::{GridDimensions, ScalarFieldShapeParams};
 // For parameter structs
-use serde::{Deserialize, Serialize};
+// No longer need: use serde::{Deserialize, Serialize};
+
 // Texture Baker specific parameter structs
 use texture_baker::{
 	AlbedoBakeParams,
@@ -66,9 +67,28 @@ pub fn get_scalar_field_structured_params_wasm(
 // --- Marching Cubes ---
 #[wasm_bindgen]
 pub struct MeshData {
-	pub vertices:Vec<f32>,
+	// These fields are not directly accessible from JS if they are not Copy.
+	// We will provide getters.
+	vertices:Vec<f32>,
+	indices:Vec<u32>,
+}
 
-	pub indices:Vec<u32>,
+#[wasm_bindgen]
+impl MeshData {
+	// Constructor accessible from Rust
+	pub fn new(vertices:Vec<f32>, indices:Vec<u32>) -> Self { MeshData { vertices, indices } }
+
+	#[wasm_bindgen(getter)]
+	pub fn vertices(&self) -> js_sys::Float32Array {
+		// Clone data into a JS-compatible array
+		js_sys::Float32Array::from(self.vertices.as_slice())
+	}
+
+	#[wasm_bindgen(getter)]
+	pub fn indices(&self) -> js_sys::Uint32Array {
+		// Clone data into a JS-compatible array
+		js_sys::Uint32Array::from(self.indices.as_slice())
+	}
 }
 
 #[wasm_bindgen]
@@ -92,7 +112,6 @@ pub fn extract_mesh_wasm(
 
 	mesh_offset_z:f32,
 ) -> Result<MeshData, JsValue> {
-	// Consider zero-copy alternatives for performance
 	let scalar_field_vec:Vec<f32> = scalar_field_js_array.to_vec();
 
 	let grid_dims:GridDimensions = serde_wasm_bindgen::from_value(grid_dims_js)?;
@@ -104,7 +123,8 @@ pub fn extract_mesh_wasm(
 	let mc_output =
 		marching_cubes::run_marching_cubes(&scalar_field_vec, grid_dims, iso_level, mesh_scale, mesh_offset);
 
-	Ok(MeshData { vertices:mc_output.vertices, indices:mc_output.indices })
+	// Use the Rust constructor for MeshData
+	Ok(MeshData::new(mc_output.vertices, mc_output.indices))
 }
 
 // --- Texture Baking ---
@@ -152,17 +172,12 @@ pub fn bake_texture_wasm(
 
 	let height_map_vec_opt:Option<Vec<f32>> = height_map_js_array_opt.map(|arr| arr.to_vec());
 
-	// Call the internal baker which uses the params_js_value
-	// Use the refined function
 	texture_baker::bake_texture_from_js_params_refined(
 		rust_tex_type,
 		width,
 		height,
 		global_seed,
-		// Pass as reference
-		// Pass JsValue by reference
 		&params_js_value,
-		// Pass as reference
 		height_map_vec_opt.as_ref(),
 	)
 }
@@ -173,24 +188,19 @@ pub fn bake_texture_wasm(
 pub fn get_default_fbm_params() -> JsValue {
 	let params = FbmParameters::default();
 
-	// Default should always serialize
 	serde_wasm_bindgen::to_value(&params).unwrap()
 }
 
 #[wasm_bindgen]
 pub fn get_default_scalar_field_shape_params() -> JsValue {
-	// Assuming ScalarFieldShapeParams derives Default
-	let params = ScalarFieldShapeParams::default();
+	let params = scalar_field::ScalarFieldShapeParams::default();
 
-	// If not, need to implement Default for it.
-	// Let's assume it does or can be made to.
 	serde_wasm_bindgen::to_value(&params).unwrap()
 }
 
 #[wasm_bindgen]
 pub fn get_default_grid_dimensions() -> JsValue {
-	// Assuming GridDimensions derives Default
-	let params = GridDimensions::default();
+	let params = scalar_field::GridDimensions::default();
 
 	serde_wasm_bindgen::to_value(&params).unwrap()
 }

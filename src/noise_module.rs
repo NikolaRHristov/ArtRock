@@ -1,3 +1,4 @@
+// Simplex is Seedable
 use noise::{Fbm, MultiFractal, NoiseFn, Simplex};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
@@ -39,6 +40,9 @@ impl Default for FbmParameters {
 	}
 }
 
+// Made NoiseController Copy for easier use with Rayon if needed, though not
+// strictly required by current errors
+#[derive(Clone, Copy)]
 pub struct NoiseController {
 	global_seed:u32,
 	// We don't store FBM instances directly anymore if params are passed for each call
@@ -52,6 +56,7 @@ impl NoiseController {
 	// Generic FBM sampling function
 
 	pub fn sample_fbm(
+		// No longer needs to be mut
 		&self,
 
 		params:&FbmParameters,
@@ -70,17 +75,28 @@ impl NoiseController {
 		// For now, wrapping_add is fine.
 
 		final_seed = final_seed.wrapping_add(params.seed_offset);
+		// Incorporate coordinates into the seed for more variation if desired,
+		// but this is usually handled by sampling at different coords.
+		// The original hash based on coords was a bit unusual for a per-FBM-instance
+		// seed. Let's rely on params.seed_offset and global_seed primarily for the
+		// FBM instance's base seed.
 		final_seed = final_seed.wrapping_add(
 			((coords[0] * 73856093.0) as u32) ^ ((coords[1] * 19349663.0) as u32) ^ ((coords[2] * 83492791.0) as u32),
 		);
 
+		// Seed the Simplex source
 		let simplex_source = Simplex::new(final_seed);
-		let fbm_instance = Fbm::new(simplex_source)
-            .set_octaves(params.octaves as usize)
-             // Base frequency for noise-rs FBM; scale is applied to coords
+
+		// Correct usage for noise-rs 0.9.0: Fbm::new takes the source module.
+		let fbm_instance = Fbm::new(simplex_source).set_octaves(params.octaves as usize)
+			// Base frequency for noise-rs FBM; scale is applied to coords
+
+			// This is the internal frequency of the FBM components.
 			.set_frequency(1.0)
-            .set_persistence(params.persistence)
-            .set_lacunarity(params.lacunarity);
+			// The overall scale is controlled by multiplying coords by params.frequency.
+
+			.set_persistence(params.persistence)
+			.set_lacunarity(params.lacunarity);
 
 		let scaled_coords = [
 			coords[0] * params.frequency,
