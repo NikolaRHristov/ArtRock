@@ -1,4 +1,4 @@
-use noise::{Fbm, NoiseFn, Seedable, Simplex};
+use noise::{Fbm, MultiFractal, NoiseFn, Simplex};
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 

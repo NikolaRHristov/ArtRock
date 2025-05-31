@@ -153,26 +153,79 @@ pub fn bake_texture_wasm(
 	let height_map_vec_opt:Option<Vec<f32>> = height_map_js_array_opt.map(|arr| arr.to_vec());
 
 	// Call the internal baker which uses the params_js_value
-	texture_baker::bake_texture_from_js_params(
+	// Use the refined function
+	texture_baker::bake_texture_from_js_params_refined(
 		rust_tex_type,
 		width,
 		height,
 		global_seed,
 		// Pass as reference
-		params_js_value,
+		// Pass JsValue by reference
+		&params_js_value,
 		// Pass as reference
 		height_map_vec_opt.as_ref(),
 	)
 }
 
-// Utility to demonstrate FbmParameters can be passed (for UI default population
-// etc.)
+// --- Default Parameter Getters ---
+
 #[wasm_bindgen]
 pub fn get_default_fbm_params() -> JsValue {
 	let params = FbmParameters::default();
 
-	serde_wasm_bindgen::to_value(params).unwrap()
+	// Default should always serialize
+	serde_wasm_bindgen::to_value(&params).unwrap()
 }
 
-// Similar default getters for AlbedoBakeParams, etc., can be useful for JS to
-// know the structure.
+#[wasm_bindgen]
+pub fn get_default_scalar_field_shape_params() -> JsValue {
+	// Assuming ScalarFieldShapeParams derives Default
+	let params = ScalarFieldShapeParams::default();
+
+	// If not, need to implement Default for it.
+	// Let's assume it does or can be made to.
+	serde_wasm_bindgen::to_value(&params).unwrap()
+}
+
+#[wasm_bindgen]
+pub fn get_default_grid_dimensions() -> JsValue {
+	// Assuming GridDimensions derives Default
+	let params = GridDimensions::default();
+
+	serde_wasm_bindgen::to_value(&params).unwrap()
+}
+
+#[wasm_bindgen]
+pub fn get_default_albedo_bake_params() -> JsValue {
+	let params = AlbedoBakeParams::default();
+
+	serde_wasm_bindgen::to_value(&params).unwrap()
+}
+
+#[wasm_bindgen]
+pub fn get_default_height_bake_params() -> JsValue {
+	let params = HeightBakeParams::default();
+
+	serde_wasm_bindgen::to_value(&params).unwrap()
+}
+
+#[wasm_bindgen]
+pub fn get_default_normal_bake_params() -> JsValue {
+	let params = NormalBakeParams::default();
+
+	serde_wasm_bindgen::to_value(&params).unwrap()
+}
+
+#[wasm_bindgen]
+pub fn get_default_roughness_bake_params() -> JsValue {
+	let params = RoughnessBakeParams::default();
+
+	serde_wasm_bindgen::to_value(&params).unwrap()
+}
+
+#[wasm_bindgen]
+pub fn get_default_ao_bake_params() -> JsValue {
+	let params = AoBakeParams::default();
+
+	serde_wasm_bindgen::to_value(&params).unwrap()
+}
