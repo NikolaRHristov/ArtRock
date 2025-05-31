@@ -1,8 +1,13 @@
 [build]
 target-dir = "Target"
+# rustflags = ["-C", "target-feature=+bulk-memory,+nontrapping-fptoint"]
 
 [cargo-new]
 vcs = "git"
+
+[profile.dev]
+panic = "abort"
+opt-level = 0
 
 [profile.release]
 opt-level = 3
