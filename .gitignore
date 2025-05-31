@@ -3,10 +3,16 @@
 !/Target/debug
 !/Target/release
 !/Target/x86_64-pc-windows-msvc
+!/Target/wasm32-unknown-unknown
+!/Target/wasm32-unknown-unknown/debug
+!/Target/wasm32-unknown-unknown/release
 
 /Target/debug/*
 /Target/release/*
 /Target/x86_64-pc-windows-msvc/*
+/Target/wasm32-unknown-unknown/*
+/Target/wasm32-unknown-unknown/debug/*
+/Target/wasm32-unknown-unknown/release/*
 
 !/Target/debug/bundle
 !/Target/debug/bundle/nsis
@@ -39,4 +45,16 @@
 !/Target/x86_64-pc-windows-msvc/bundle/msi/*.msi
 !/Target/x86_64-pc-windows-msvc/bundle/appimage/*.AppImage
 
-!/Target/x86_64-pc-windows-msvc/*.exe
+!/Target/wasm32-unknown-unknown/bundle
+!/Target/wasm32-unknown-unknown/bundle/nsis
+!/Target/wasm32-unknown-unknown/bundle/msi
+!/Target/wasm32-unknown-unknown/bundle/appimage
+!/Target/wasm32-unknown-unknown/bundle/nsis/*.exe
+!/Target/wasm32-unknown-unknown/bundle/msi/*.msi
+!/Target/wasm32-unknown-unknown/bundle/appimage/*.AppImage
+
+!/Target/wasm32-unknown-unknown/debug
+!/Target/wasm32-unknown-unknown/debug/*.wasm
+
+!/Target/wasm32-unknown-unknown/release
+!/Target/wasm32-unknown-unknown/release/*.wasm

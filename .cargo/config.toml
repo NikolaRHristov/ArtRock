@@ -1,6 +1,5 @@
 [build]
 target-dir = "Target"
-# rustflags = ["-C", "target-feature=+bulk-memory,+nontrapping-fptoint"]
 
 [cargo-new]
 vcs = "git"
